@@ -12,7 +12,33 @@ export default function Header() {
     navigate('/login');
   };
 
+  const addBookStyle = {
+    backgroundColor: 'white',
+    color: '#182848', // dark text for contrast
+    padding: '8px 16px',
+    borderRadius: '5px',
+    textDecoration: 'none',
+    fontWeight: 'bold',
+    display: 'inline-block',
+    textAlign: 'center',
+    // Responsive style: center text on small screens
+    // We'll do it with a media query inside a <style> tag below
+  };
+
   return (
+    <>
+     <style>
+        {`
+          @media (max-width: 600px) {
+            .add-book-link {
+              display: block;
+              width: 100%;
+              text-align: center !important;
+            }
+          }
+        `}
+      </style>
+   
     <header
       style={{
         display: 'flex',
@@ -31,7 +57,8 @@ export default function Header() {
 
       <nav style={{ display: 'flex', gap: 12 }}>
         {location.pathname === '/' && user && (
-          <Link to="/add" style={{ color: 'white', textDecoration: 'underline' }}>
+          <Link to="/add" className="add-book-link"
+              style={addBookStyle}>
             ➕ Add Book
           </Link>
         )}
@@ -47,5 +74,6 @@ export default function Header() {
         )}
       </nav>
     </header>
+     </>
   );
 }
