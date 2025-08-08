@@ -2,6 +2,30 @@ import React, { useRef, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
+import styled from 'styled-components';
+
+const LoginContainer = styled.div.attrs({className: "login-container"})`
+
+    min-height: calc(100vh - 6rem);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+    box-sizing: border-box;
+
+  &::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url("/assets/web-cover-home-page.jpg") no-repeat center center;
+    background-size: cover;
+    z-index: -1;
+  }
+`
+
 
 export default function Login() {
   const emailRef = useRef();
@@ -32,18 +56,7 @@ export default function Login() {
   return (
     <>
       <Header />
-      <div
-        style={{
-          minHeight: 'calc(100vh - 60px)',
-          background: 'linear-gradient(to bottom right, #6a11cb, #2575fc)',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          fontFamily: 'Segoe UI, sans-serif',
-          padding: 20,
-          boxSizing: 'border-box'
-        }}
-      >
+      <LoginContainer>
         <div
           style={{
             backgroundColor: '#fff',
@@ -104,7 +117,7 @@ export default function Login() {
             </button>
           </div>
         </div>
-      </div>
+      </LoginContainer>
     </>
   );
 }

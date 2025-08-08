@@ -25,6 +25,7 @@
     "html5-qrcode": "^2.3.8",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-icons": "^5.5.0",
     "react-qr-barcode-scanner": "^2.1.8",
     "react-router-dom": "^7.6.3",
     "styled-components": "^6.1.19",

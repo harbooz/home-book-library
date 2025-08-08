@@ -1,10 +1,26 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components'
 import BarcodeScannerComponent from 'react-qr-barcode-scanner';
+import Theme from '../Theme';
+import { BsUpcScan } from "react-icons/bs";
 
-const ISBNWrapper = styled.div`
-margin-bottom: 20px
+const ISBNWrapper = styled.div.attrs({className: "isbn-wrapper"})`
+margin-bottom: 2rem;
 
+h3 {
+  display: flex;
+  align-items: center;
+  svg {
+    margin-right: 5px;
+   }
+}
+
+.isbn__scan-box {
+    border: 1px solid ${Theme.colors.mutedText};
+    width: 30rem;
+    box-sizing: border-box;
+    border-radius: 8px;
+}
 
 `
 
@@ -44,8 +60,8 @@ export default function ISBNScanner({ onBookDetected }) {
 
   return (
     <ISBNWrapper>
-      <h3>📘 Scan ISBN Barcode</h3>
-      <div style={{ border: '1px solid #ccc', width: "300px", boxSizing:"border-box" }}>
+      <h3><BsUpcScan/> Scan ISBN Barcode</h3>
+      <div className='isbn__scan-box'>
         <BarcodeScannerComponent
           onUpdate={handleScan}
         />

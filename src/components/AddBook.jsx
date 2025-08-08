@@ -1,41 +1,159 @@
 import React, { useState, useRef, useEffect } from 'react';
-import styled from 'styled-components'
+import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import ISBNScanner from './ISBNScanner';
 import Header from './Header';
-
+import Theme from '../Theme';
+import { BsSearch, BsUpload } from "react-icons/bs";
+import { FaPlus } from "react-icons/fa6";
 
 const AddBookWrapper = styled.div`
-input {
-height: 40px;
-max-width: 340px;
-width: 100%;
-padding: 10px;
-box-sizing: border-box;
-border-radius: 5px;
-border: solid 1px #ccc;
-}
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  min-height: 100%;
+  flex-direction: column;
 
-label {
-display: block
-}
+  &::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url("/assets/web-cover-home-page.jpg") no-repeat center center;
+    background-size: cover;
+    z-index: -1;
+  }
 
-.add-book-section {
-     margin-top: 10px;
+  .isbn__container {
+    padding: 2rem;
+    max-width: 57rem;
+    margin: auto;
+    background: ${Theme.colors.darkBrownRgba};
+    border-radius: 1rem;
+    width: 100%;
+    color: ${Theme.colors.whiteText};
+
+    h2 {
+      font-size: 2rem;
+      margin: 0;
+    }
+
+    svg {
+      font-size: 2rem
+    }
+    .isbn__add-container {
+      margin-top: 2rem;
+      margin-bottom: 2rem;
+    }
+    label {
+      font-size: 1.4rem;
+      input {
+        width: 60%;
+        margin-left: 10px;
+        background: transparent;
+        color: ${Theme.colors.whiteText};
+        border-color: ${Theme.colors.whiteText};
+      }
+    }
+      & ::placeholder {
+      color: ${Theme.colors.whiteText};
+      }
+  }
+
+  .find--book {
+    font-size: 1.4rem;
+    display: flex;
+    align-items: center;
+    &:hover {
+      border: solid 1px transparent;
+    }
+  }
+
+  input {
+    height: 40px;
+    max-width: 340px;
+    width: 100%;
+    padding: 10px;
+    box-sizing: border-box;
+    border-radius: 5px;
+    border: solid 1px #ccc;
+  }
+
+  label {
+    display: block;
+  }
+
+  .add-book-section {
+    margin-top: 10px;
     padding: 12px;
-    border: 1px solid rgb(204, 204, 204);
+    border: 1px solid ${Theme.colors.whiteText};
     border-radius: 8px;
-    background: #e3e3e3;
-}
 
-`
+    .cta__wrapper {
+      display: flex;
+    }
+
+    .action--btn {
+      display: flex;
+      align-items: center;
+      font-size: 1.2rem;
+      svg {
+        margin-right: 5px;
+      }
+      &.cancel {
+        background: ${Theme.colors.danger};
+        color: ${Theme.colors.whiteText};
+      }
+      &:hover {
+        border: solid 1px transparent;
+      }
+      &:focus {
+        outline: unset;
+      }
+    }
+  }
+
+  .upload__cover {
+    background: ${Theme.colors.primary};
+    display: flex;
+    padding: 1rem 2rem;
+    color:  ${Theme.colors.whiteText};
+    border-radius: 5px;
+    cursor: pointer;
+    margin-bottom: 1rem;
+    align-items: center;
+    max-width: 20rem;
+    width: 100%;
+    justify-content: center;
+
+    svg {
+      margin-right: 10px;
+    }
+  }
+
+  .error-message {
+    color: ${Theme.colors.errorMessage};
+    margin-top: 5px;
+    font-weight: bold;
+    font-size: 1.6rem;
+  }
+
+  .warning-message {
+    color: orange;
+    font-weight: bold;
+  }
+`;
 
 export default function AddBook() {
   const [photo, setPhoto] = useState(null);
   const [book, setBook] = useState({ title: '', authors: '', thumbnail: '' });
   const [warningMessage, setWarningMessage] = useState('');
-  const [error, setError] = useState('');
+  const [saveWarning, setSaveWarning] = useState('');
+  const [isbnError, setIsbnError] = useState('');
+  const [titleError, setTitleError] = useState('');
   const [manualIsbn, setManualIsbn] = useState('');
   const [fetching, setFetching] = useState(false);
 
@@ -51,7 +169,6 @@ export default function AddBook() {
     testConnection();
   }, []);
 
-  // Resize and compress image to max width 400
   async function resizeAndCompressImage(dataUrl, maxWidth = 400, quality = 0.8) {
     return new Promise((resolve) => {
       const img = new Image();
@@ -74,10 +191,11 @@ export default function AddBook() {
     });
   }
 
-  // Handle file upload for cover photo
   const handleFileChange = async (event) => {
     setWarningMessage('');
-    setError('');
+    setSaveWarning('');
+    setIsbnError('');
+    setTitleError('');
     const file = event.target.files[0];
     if (!file) return;
 
@@ -89,13 +207,12 @@ export default function AddBook() {
         setBook((prevBook) => ({ ...prevBook, thumbnail: compressed }));
       } catch (error) {
         console.error('Error compressing image:', error);
-        setError('Failed to process the image.');
+        setTitleError('Failed to process the image.');
       }
     };
     reader.readAsDataURL(file);
   };
 
-  // Handle book detected from barcode scanner
   const onBookDetected = (detectedBook) => {
     if (
       previousBookRef.current.title === detectedBook.title &&
@@ -113,17 +230,20 @@ export default function AddBook() {
       authors: detectedBook.authors,
     };
     setWarningMessage('');
+    setSaveWarning('');
+    setIsbnError('');
+    setTitleError('');
   };
 
-  // Fetch book info by manual ISBN input
   const fetchBookByISBN = async () => {
     if (!manualIsbn.trim()) {
-      setError('Please enter a valid ISBN.');
+      setIsbnError('Please enter a valid ISBN.');
       return;
     }
     setFetching(true);
-    setError('');
+    setIsbnError('');
     setWarningMessage('');
+    setSaveWarning('');
     try {
       const isbnCode = manualIsbn.replace(/[^0-9X]/gi, '').slice(-13);
       const response = await fetch(
@@ -156,22 +276,21 @@ export default function AddBook() {
           title: bookData.title,
           authors: bookData.authors,
         };
-        setError('');
+        setIsbnError('');
       } else {
-        setError('No book found for this ISBN.');
+        setIsbnError('No book found for this ISBN.');
       }
     } catch (err) {
       console.error('ISBN lookup failed:', err);
-      setError('Failed to fetch book data.');
+      setIsbnError('Failed to fetch book data.');
     } finally {
       setFetching(false);
     }
   };
 
-  // Save book to Supabase
   const saveBook = async () => {
     if (!book.title.trim()) {
-      alert('Please enter a book title.');
+      setTitleError('Please enter a book title.');
       return;
     }
 
@@ -186,7 +305,23 @@ export default function AddBook() {
         return;
       }
 
-      const { data, error } = await supabase.from('books').insert([
+      const { data: existingBooks, error: fetchError } = await supabase
+        .from('books')
+        .select('id')
+        .or(`title.eq.${book.title},authors.eq.${book.authors}`);
+
+      if (fetchError) {
+        console.error('Error checking for duplicates:', fetchError);
+        setSaveWarning('Error checking for existing books.');
+        return;
+      }
+
+      if (existingBooks.length > 0) {
+        setSaveWarning(`A book with the same title or authors already exists.`);
+        return;
+      }
+
+      const { error } = await supabase.from('books').insert([
         {
           title: book.title,
           authors: book.authors,
@@ -201,6 +336,7 @@ export default function AddBook() {
         return;
       }
 
+      setSaveWarning('');
       alert(`Added "${book.title}" to your library!`);
       navigate('/');
     } catch (error) {
@@ -213,50 +349,41 @@ export default function AddBook() {
     setPhoto(null);
     setBook({ title: '', authors: '', thumbnail: '' });
     setWarningMessage('');
-    setError('');
+    setIsbnError('');
+    setTitleError('');
     setManualIsbn('');
+    setSaveWarning('');
+    navigate('/');
   };
 
   return (
     <AddBookWrapper>
       <Header />
-      <div style={{ padding: 20, maxWidth: 600, margin: 'auto' }}>
+      <div className='isbn__container'>
         <h2>Add a New Book</h2>
 
-        {/* ISBN Scanner */}
         <ISBNScanner onBookDetected={onBookDetected} />
 
-        {/* Manual ISBN Input */}
-        <div style={{ marginTop: 20, marginBottom: 20 }}>
+        {/* ISBN-specific error */}
+        {isbnError && <p className="error-message">{isbnError}</p>}
+
+        <div className='isbn__add-container'>
           <label>
-            Manual ISBN Input:{' '}
+            Manual ISBN Input:
             <input
-              type="text"
+              type="tel"
               value={manualIsbn}
               onChange={(e) => setManualIsbn(e.target.value)}
-              placeholder="Enter ISBN manually"
-              style={{ width: '60%', marginRight: 8 }}
+              placeholder="Enter ISBN manually"              
             />
           </label>
-          <button onClick={fetchBookByISBN} disabled={fetching}>
-            {fetching ? 'Fetching...' : 'Find Book'}
+          <button className='find--book' onClick={fetchBookByISBN} disabled={fetching}>
+            <BsSearch /> {fetching ? 'Fetching...' : 'Find Book'}
           </button>
         </div>
 
-        {/* Upload cover photo */}
-        <label
-          htmlFor="fileInput"
-          style={{
-            display: 'inline-block',
-            padding: '10px 20px',
-            backgroundColor: '#007bff',
-            color: 'white',
-            borderRadius: 5,
-            cursor: 'pointer',
-            marginBottom: 10,
-          }}
-        >
-          📁 Upload Cover Photo
+        <label className='upload__cover' htmlFor="fileInput">
+          <BsUpload /> Upload Cover Photo
         </label>
         <input
           id="fileInput"
@@ -266,8 +393,12 @@ export default function AddBook() {
           style={{ display: 'none' }}
         />
 
-        {error && <p style={{ color: 'red' }}>{error}</p>}
-        {warningMessage && <p style={{ color: 'orange', fontWeight: 'bold' }}>{warningMessage}</p>}
+        {/* Title-specific error */}
+        {titleError && <p className="error-message">{titleError}</p>}
+
+        {/* Save warning below Upload button */}
+        {saveWarning && <p className="error-message">{saveWarning}</p>}
+        {warningMessage && <p className="warning-message">{warningMessage}</p>}
 
         {photo && (
           <div style={{ marginTop: 10, marginBottom: 10 }}>
@@ -279,8 +410,7 @@ export default function AddBook() {
           </div>
         )}
 
-        {/* Book info inputs */}
-        <div className='add-book-section'>
+        <div className="add-book-section">
           <label>
             Title:
             <input
@@ -291,7 +421,7 @@ export default function AddBook() {
             />
           </label>
           <label>
-            Authors (comma separated):{' '}
+            Authors (comma separated):
             <input
               type="text"
               value={book.authors}
@@ -299,13 +429,14 @@ export default function AddBook() {
               style={{ width: '100%', marginBottom: 8 }}
             />
           </label>
-
-          <button onClick={saveBook} style={{ marginRight: 10 }}>
-            ➕ Add to Library
-          </button>
-          <button onClick={cancelAdd} style={{ backgroundColor: '#ccc' }}>
-            Cancel
-          </button>
+          <div className='cta__wrapper'>
+            <button className='action--btn' onClick={saveBook} style={{ marginRight: 10 }}>
+              <FaPlus/> Add to Library
+            </button>
+            <button className='action--btn cancel' onClick={cancelAdd}>
+              Cancel
+            </button>
+          </div>
         </div>
       </div>
     </AddBookWrapper>
