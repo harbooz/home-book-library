@@ -24,7 +24,6 @@ const HomePageContainer = styled.div`
     background-size: cover;
     z-index: -1;
   }
-
 `
 
 const ContainerWrapper = styled.div`
@@ -40,16 +39,14 @@ const ContainerWrapper = styled.div`
      font-size: 2rem;       
     }
      
-    
   .main__title {
     font-weight: 700;
     font-size: 4.2rem;
-     color: ${Theme.colors.whiteText};
+    color: ${Theme.colors.whiteText};
     margin: 4rem auto;
     text-align: center;
   }
 
-  
   .sub__title {
     display: flex;
     flex-direction: column;
@@ -68,6 +65,30 @@ const ContainerWrapper = styled.div`
       max-width: 300px;
       width: 100%;
     }
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  .spinner__wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    top: 0;
+  }
+
+  .spinner {
+    width: 60px;
+    height: 60px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-top-color: ${Theme.colors.whiteText || 'blue'};
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 3rem auto;   
   }
 `
 
@@ -189,7 +210,6 @@ const SearchInput = styled.input`
   }
 `;
 
-
 export default function Home() {
   const [books, setBooks] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -218,7 +238,7 @@ export default function Home() {
         return;
       }
 
-       setUser(user);
+      setUser(user);
 
       const { data, error } = await supabase
         .from('books')
@@ -323,7 +343,9 @@ export default function Home() {
         )}
 
         {loading ? (
-          <p>Loading books...</p>
+          <div className='spinner__wrapper'>
+          <div className="spinner" aria-label="Loading spinner" role="status" />
+          </div>
         ) : filteredBooks.length === 0 ? (
           <p className='sub__title'>
            {user && "No books found matching your search."}

@@ -7,6 +7,7 @@ import Header from './Header';
 import Theme from '../Theme';
 import { BsSearch, BsUpload } from "react-icons/bs";
 import { FaPlus } from "react-icons/fa6";
+import AddBookConfirmationModal from './AddBookConfirmationModal';
 
 const AddBookWrapper = styled.div`
   position: relative;
@@ -156,7 +157,8 @@ export default function AddBook() {
   const [titleError, setTitleError] = useState('');
   const [manualIsbn, setManualIsbn] = useState('');
   const [fetching, setFetching] = useState(false);
-
+  const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+  
   const navigate = useNavigate();
   const previousBookRef = useRef({ title: '', authors: '' });
 
@@ -308,7 +310,8 @@ export default function AddBook() {
       const { data: existingBooks, error: fetchError } = await supabase
         .from('books')
         .select('id')
-        .or(`title.eq.${book.title},authors.eq.${book.authors}`);
+        .eq('title', book.title)
+        .eq('authors', book.authors);
 
       if (fetchError) {
         console.error('Error checking for duplicates:', fetchError);
@@ -317,7 +320,7 @@ export default function AddBook() {
       }
 
       if (existingBooks.length > 0) {
-        setSaveWarning(`A book with the same title or authors already exists.`);
+        setSaveWarning(`This exact book by this author already exists.`);
         return;
       }
 
@@ -337,8 +340,8 @@ export default function AddBook() {
       }
 
       setSaveWarning('');
-      alert(`Added "${book.title}" to your library!`);
-      navigate('/');
+      // Show confirmation modal instead of alert
+      setShowConfirmationModal(true);
     } catch (error) {
       console.error('Unexpected error:', error);
       alert('Unexpected error: ' + error.message);
@@ -356,6 +359,11 @@ export default function AddBook() {
     navigate('/');
   };
 
+  const handleModalClose = () => {
+    setShowConfirmationModal(false);
+    navigate('/');
+  };
+
   return (
     <AddBookWrapper>
       <Header />
@@ -364,7 +372,6 @@ export default function AddBook() {
 
         <ISBNScanner onBookDetected={onBookDetected} />
 
-        {/* ISBN-specific error */}
         {isbnError && <p className="error-message">{isbnError}</p>}
 
         <div className='isbn__add-container'>
@@ -374,7 +381,7 @@ export default function AddBook() {
               type="tel"
               value={manualIsbn}
               onChange={(e) => setManualIsbn(e.target.value)}
-              placeholder="Enter ISBN manually"              
+              placeholder="Enter ISBN manually"
             />
           </label>
           <button className='find--book' onClick={fetchBookByISBN} disabled={fetching}>
@@ -393,10 +400,7 @@ export default function AddBook() {
           style={{ display: 'none' }}
         />
 
-        {/* Title-specific error */}
         {titleError && <p className="error-message">{titleError}</p>}
-
-        {/* Save warning below Upload button */}
         {saveWarning && <p className="error-message">{saveWarning}</p>}
         {warningMessage && <p className="warning-message">{warningMessage}</p>}
 
@@ -431,7 +435,7 @@ export default function AddBook() {
           </label>
           <div className='cta__wrapper'>
             <button className='action--btn' onClick={saveBook} style={{ marginRight: 10 }}>
-              <FaPlus/> Add to Library
+              <FaPlus /> Add to Library
             </button>
             <button className='action--btn cancel' onClick={cancelAdd}>
               Cancel
@@ -439,6 +443,10 @@ export default function AddBook() {
           </div>
         </div>
       </div>
+
+      {showConfirmationModal && (
+        <AddBookConfirmationModal title={book.title} onClose={handleModalClose} />
+      )}
     </AddBookWrapper>
   );
 }
