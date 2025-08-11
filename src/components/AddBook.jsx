@@ -14,7 +14,7 @@ const AddBookWrapper = styled.div`
   position: relative;
   overflow: hidden;
   display: flex;
-  height: 100%;
+  min-height: 100%;
   flex-direction: column;
 
   .isbn__container {
@@ -25,6 +25,10 @@ const AddBookWrapper = styled.div`
     border-radius: 1rem;
     width: 100%;
     color: ${Theme.colors.whiteText};
+
+     @media (min-width: 380px) and (max-width: 767px) {
+      width: 90%;
+    }
 
     h2 {
       font-size: 2rem;
