@@ -274,7 +274,7 @@ export default function Home() {
     const handler = setTimeout(() => {
       setDebouncedQuery(searchQuery);
       setVisibleCount(12); // reset visible count on new search
-    }, 500);
+    }, 300);
 
     return () => clearTimeout(handler);
   }, [searchQuery]);
