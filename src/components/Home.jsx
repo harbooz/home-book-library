@@ -105,12 +105,13 @@ const ContainerWrapper = styled.div`
 
   .search__container {
     position: relative;
-    width: 100%;
+    width: 90%;
     max-width: 37rem;
     margin-bottom: 2rem;
+
     .clear--btn {
       position: absolute;
-       top: 1.8rem;
+      top: 1rem;
       right: 1rem;
       background: transparent;
       border: none;
@@ -239,8 +240,7 @@ const SearchInput = styled.input`
   border: 1px solid #ccc;
   height: 4rem;
   font-size: 1.6rem;
-  max-width: 37rem;
-  width: 90%;
+  width: 100%;
   margin-bottom: 2rem;
   font-size: 1.5rem;
   &:focus {
