@@ -9,32 +9,15 @@ import bgImage from '/assets/web-cover-home-page.jpg';
 import WelcomeIntro from './WelcomeIntro';
 
 const HomePageContainer = styled.div`
-  position: relative;
-  display: flex;
-  min-height: 100%;
-  flex-direction: column;
-
-  &::before {
-    content: "";
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: url(${bgImage}) no-repeat center center;
-    background-size: cover;
-    z-index: -1;
-    overflow: hidden;
-    background-attachment: fixed;
-  }
+   display: flex;
+   height: 100%;
 `;
 
 const ContainerWrapper = styled.div`
   display: flex;
   align-items: center;
-  justify-content: center;
   flex-direction: column;
- height: calc(100% - 6rem);
+  height: 100%;
   padding: 1rem;
   flex-grow: 1;
 

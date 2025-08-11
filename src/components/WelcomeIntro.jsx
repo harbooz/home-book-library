@@ -8,24 +8,12 @@ import bgImage from '/assets/web-cover-home-page.jpg';
 const WelcomeWrapper = styled.div.attrs({ className: 'welcome-wrapper' })`
   position: relative;
   display: flex;
-  height: calc(100% - 6rem);
+  height: 100%;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 1rem;
   box-sizing: border-box;
-
-  &::before {
-    content: "";
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: url(${bgImage}) no-repeat center center;
-    background-size: cover;
-    z-index: -1;
-  }
 
   h1 {
     font-weight: 700;
