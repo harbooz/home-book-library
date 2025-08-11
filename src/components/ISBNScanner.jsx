@@ -18,6 +18,7 @@ h3 {
 .isbn__scan-box {
     border: 1px solid ${Theme.colors.mutedText};
     width: 30rem;
+    height: 17rem;
     box-sizing: border-box;
     border-radius: 8px;
 }

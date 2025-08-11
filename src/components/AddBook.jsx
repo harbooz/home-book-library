@@ -27,7 +27,7 @@ const AddBookWrapper = styled.div`
     color: ${Theme.colors.whiteText};
 
      @media (min-width: 380px) and (max-width: 767px) {
-      width: 90%;
+      width: 95%;
     }
 
     h2 {
@@ -43,8 +43,18 @@ const AddBookWrapper = styled.div`
       margin-bottom: 2rem;
 
       .isbn-search {
-         position: relative;
+        
       }
+         .isbn__input {
+            position: relative;
+            max-width: 300px;
+            width: 100%;
+
+          input {
+           margin-left: 0;
+           width: 100%;
+          }
+         }
 
     }
     label {
@@ -67,8 +77,9 @@ const AddBookWrapper = styled.div`
     display: flex;
     align-items: center;
     position: absolute;
-    right: 99px;
-    top: 0;
+    border-radius: 5px;
+    right: -1px;
+    top: 1px;
     &:hover {
       border: solid 1px transparent;
     }
@@ -387,6 +398,7 @@ export default function AddBook() {
         <div className="isbn__add-container">
           <label className='isbn-search'>
             Manual ISBN Input:
+            <div className='isbn__input'>
             <input
               type="tel"
               value={manualIsbn}
@@ -396,6 +408,7 @@ export default function AddBook() {
             <button className="find--book" onClick={fetchBookByISBN} disabled={fetching}>
             <BsSearch /> {fetching ? 'Fetching...' : ''}
           </button>
+          </div>
           </label>
           
         </div>
