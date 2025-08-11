@@ -150,7 +150,7 @@ const CardWrapper = styled.div`
   width: 100%;
 
   @media (min-width: 380px) and (max-width: 767px) {
-    max-width: 16rem;
+    max-width: 18rem;
     padding: 1rem;
   }
 
