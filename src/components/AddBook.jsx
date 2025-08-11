@@ -11,8 +11,6 @@ import { BooksContext } from '../contexts/BooksContext';
 
 
 const AddBookWrapper = styled.div`
-  position: relative;
-  overflow: hidden;
   display: flex;
   min-height: 100%;
   flex-direction: column;
