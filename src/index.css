@@ -19,6 +19,11 @@ html, body, #root {
   height: 100%;
   margin: 0;
   padding: 0;
+   -webkit-font-smoothing: antialiased;
+}
+
+* > * {
+  box-sizing: border-box;
 }
 
 a {

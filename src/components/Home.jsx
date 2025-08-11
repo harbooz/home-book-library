@@ -181,6 +181,7 @@ const CardWrapper = styled.div`
   .book__title {
     font-size: 1.6rem;
     line-height: 1.8rem;
+    color: ${Theme.colors.text};
     font-weight: 600;
     text-align: center;
     @media (min-width: 380px) and (max-width: 767px) {
