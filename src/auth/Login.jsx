@@ -7,8 +7,7 @@ import { useContext } from 'react';
 import bgImage from '/assets/web-cover-home-page.jpg';
 
 const LoginContainer = styled.div.attrs({className: "login-container"})`
-
-    min-height: calc(100vh - 6rem);
+    height: 100%;
     display: flex;
     justify-content: center;
     align-items: center;

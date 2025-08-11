@@ -435,6 +435,7 @@ export default function Home() {
             </CardContainer>
 
             {visibleCount < filteredBooks.length && (
+              <div>
               <button
                 className="load-more-btn"
                 onClick={loadMore}
@@ -442,6 +443,7 @@ export default function Home() {
               >
                 Load More
               </button>
+              </div>
             )}
           </>
         )}

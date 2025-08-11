@@ -8,27 +8,14 @@ import { BsSearch, BsUpload } from "react-icons/bs";
 import { FaPlus } from "react-icons/fa6";
 import AddBookConfirmationModal from './AddBookConfirmationModal';
 import { BooksContext } from '../contexts/BooksContext'; 
-import bgImage from '/assets/web-cover-home-page.jpg';
 
 
 const AddBookWrapper = styled.div`
   position: relative;
   overflow: hidden;
   display: flex;
-  min-height: 100%;
+  height: 100%;
   flex-direction: column;
-
-  &::before {
-    content: "";
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: url(${bgImage}) no-repeat center center;
-    background-size: cover;
-    z-index: -1;
-  }
 
   .isbn__container {
     padding: 2rem;
