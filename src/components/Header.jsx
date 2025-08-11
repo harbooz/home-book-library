@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { FaArrowRightToBracket, FaArrowRightFromBracket, FaPlus } from "react-icons/fa6";
 import styled from 'styled-components';
 import Theme from '../Theme';
 import { useAuth } from '../contexts/AuthContext';
+import { BooksContext } from '../contexts/BooksContext';
 
 const HeaderNav = styled.div`
     position: sticky;
@@ -14,7 +15,7 @@ const HeaderNav = styled.div`
     align-items: center;
     padding: 10px 20px;
     background: ${Theme.colors.darkBrown};
-    color:  ${Theme.colors.whiteText};
+    color: ${Theme.colors.whiteText};
     height: 6rem;
     box-sizing: border-box;
 
@@ -59,21 +60,28 @@ export default function Header() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const { clearBooks } = useContext(BooksContext);
 
-  const handleLogout = async () => {
+const handleLogout = async () => {
+  try {
+    console.log('Logging out...');
     await logout();
-    navigate('/login');
-  };
-
+    console.log('Logout successful');
+    clearBooks();
+    navigate('/login', { replace: true });
+    console.log('Navigated to /login');
+  } catch (error) {
+    console.error('Logout failed:', error);
+  }
+};
   return (
     <HeaderNav className='header-nav'>
-    
         <Link to="/" style={{ color: 'white', fontSize: '2rem', textDecoration: 'none' }}>
           📚 Home Library
         </Link>
 
         <nav style={{ display: 'flex', gap: 12 }}>
-          {location.pathname === '/' && user && (
+         {user && (
             <Link to="/add" className="btn__add-book">
               <FaPlus /> <span>Add Book</span>
             </Link>

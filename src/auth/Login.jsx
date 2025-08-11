@@ -1,8 +1,10 @@
 import React, { useRef, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import Header from '../components/Header';
 import styled from 'styled-components';
+import { BooksContext } from '../contexts/BooksContext';
+import { useContext } from 'react';
+import bgImage from '/assets/web-cover-home-page.jpg';
 
 const LoginContainer = styled.div.attrs({className: "login-container"})`
 
@@ -20,7 +22,7 @@ const LoginContainer = styled.div.attrs({className: "login-container"})`
     left: 0;
     width: 100%;
     height: 100%;
-    background: url("/assets/web-cover-home-page.jpg") no-repeat center center;
+     background: url(${bgImage}) no-repeat center center;
     background-size: cover;
     z-index: -1;
   }
@@ -34,6 +36,7 @@ export default function Login() {
   const [isLogin, setIsLogin] = useState(true);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { fetchBooks, loading } = useContext(BooksContext);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -47,7 +50,9 @@ export default function Login() {
         : await signup(email, password);
       if (error) throw error;
 
-      navigate('/');
+      await fetchBooks();
+
+      navigate('/books-list');
     } catch (err) {
       setError(err.message || 'Unexpected error');
     }
@@ -55,7 +60,6 @@ export default function Login() {
 
   return (
     <>
-      <Header />
       <LoginContainer>
         <div
           style={{
@@ -100,11 +104,13 @@ export default function Login() {
               required
               style={inputStyle}
               placeholder="••••••••"
-            />
-
-            <button type="submit" style={submitStyle}>
+            />  
+          {loading ? ( <button type="submit" style={submitStyle}>
+              {isLogin ? 'loading' : 'Sign Up'}
+            </button>) : ( <button type="submit" style={submitStyle}>
               {isLogin ? 'Log In' : 'Sign Up'}
-            </button>
+            </button>)}
+           
           </form>
 
           <div style={{ textAlign: 'center', marginTop: 16, fontSize: 14 }}>

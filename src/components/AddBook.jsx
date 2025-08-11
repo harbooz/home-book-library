@@ -1,13 +1,15 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useContext } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import ISBNScanner from './ISBNScanner';
-import Header from './Header';
 import Theme from '../Theme';
 import { BsSearch, BsUpload } from "react-icons/bs";
 import { FaPlus } from "react-icons/fa6";
 import AddBookConfirmationModal from './AddBookConfirmationModal';
+import { BooksContext } from '../contexts/BooksContext'; 
+import bgImage from '/assets/web-cover-home-page.jpg';
+
 
 const AddBookWrapper = styled.div`
   position: relative;
@@ -23,7 +25,7 @@ const AddBookWrapper = styled.div`
     left: 0;
     width: 100%;
     height: 100%;
-    background: url("/assets/web-cover-home-page.jpg") no-repeat center center;
+    background: url(${bgImage}) no-repeat center center;
     background-size: cover;
     z-index: -1;
   }
@@ -43,11 +45,16 @@ const AddBookWrapper = styled.div`
     }
 
     svg {
-      font-size: 2rem
+      font-size: 2rem;
     }
     .isbn__add-container {
       margin-top: 2rem;
       margin-bottom: 2rem;
+
+      .isbn-search {
+         position: relative;
+      }
+
     }
     label {
       font-size: 1.4rem;
@@ -59,15 +66,18 @@ const AddBookWrapper = styled.div`
         border-color: ${Theme.colors.whiteText};
       }
     }
-      & ::placeholder {
+    & ::placeholder {
       color: ${Theme.colors.whiteText};
-      }
+    }
   }
 
   .find--book {
     font-size: 1.4rem;
     display: flex;
     align-items: center;
+    position: absolute;
+    right: 99px;
+    top: 0;
     &:hover {
       border: solid 1px transparent;
     }
@@ -93,8 +103,18 @@ const AddBookWrapper = styled.div`
     border: 1px solid ${Theme.colors.whiteText};
     border-radius: 8px;
 
+    label{
+      &:first-child {
+         margin-bottom: 5px;
+      }
+    }
+
     .cta__wrapper {
       display: flex;
+      margin: 1rem;
+      button:first-child {
+      margin-right: 5px;
+      }
     }
 
     .action--btn {
@@ -121,7 +141,7 @@ const AddBookWrapper = styled.div`
     background: ${Theme.colors.primary};
     display: flex;
     padding: 1rem 2rem;
-    color:  ${Theme.colors.whiteText};
+    color: ${Theme.colors.whiteText};
     border-radius: 5px;
     cursor: pointer;
     margin-bottom: 1rem;
@@ -149,6 +169,8 @@ const AddBookWrapper = styled.div`
 `;
 
 export default function AddBook() {
+  const { setBooks } = useContext(BooksContext);
+
   const [photo, setPhoto] = useState(null);
   const [book, setBook] = useState({ title: '', authors: '', thumbnail: '' });
   const [warningMessage, setWarningMessage] = useState('');
@@ -158,18 +180,9 @@ export default function AddBook() {
   const [manualIsbn, setManualIsbn] = useState('');
   const [fetching, setFetching] = useState(false);
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
-  
+
   const navigate = useNavigate();
   const previousBookRef = useRef({ title: '', authors: '' });
-
-  useEffect(() => {
-    const testConnection = async () => {
-      const { data, error } = await supabase.from('books').select('*').limit(1);
-      if (error) console.error('Select error:', error);
-      else console.log('Select data:', data);
-    };
-    testConnection();
-  }, []);
 
   async function resizeAndCompressImage(dataUrl, maxWidth = 400, quality = 0.8) {
     return new Promise((resolve) => {
@@ -314,34 +327,41 @@ export default function AddBook() {
         .eq('authors', book.authors);
 
       if (fetchError) {
-        console.error('Error checking for duplicates:', fetchError);
+        console.error('Error checking duplicates:', fetchError);
         setSaveWarning('Error checking for existing books.');
         return;
       }
 
       if (existingBooks.length > 0) {
-        setSaveWarning(`This exact book by this author already exists.`);
+        setSaveWarning('This exact book by this author already exists.');
         return;
       }
 
-      const { error } = await supabase.from('books').insert([
-        {
-          title: book.title,
-          authors: book.authors,
-          thumbnail: book.thumbnail,
-          user_id: user.id,
-        },
-      ]);
+      // Insert and get inserted row
+      const { data: insertedBooks, error: insertError } = await supabase
+        .from('books')
+        .insert([
+          {
+            title: book.title.trim(),
+            authors: book.authors.trim(),
+            thumbnail: book.thumbnail,
+            user_id: user.id,
+          },
+        ])
+        .select();
 
-      if (error) {
-        console.error('Supabase insert error:', error);
-        alert('Failed to save book: ' + JSON.stringify(error, Object.getOwnPropertyNames(error)));
+      if (insertError) {
+        console.error('Insert error:', insertError);
+        alert('Failed to save book: ' + insertError.message);
         return;
       }
 
-      setSaveWarning('');
-      // Show confirmation modal instead of alert
-      setShowConfirmationModal(true);
+          if (insertedBooks && insertedBooks.length > 0) {
+        setBooks((prevBooks) => [insertedBooks[0], ...prevBooks]);
+        setSaveWarning('');
+        navigate('/books-list');  
+        return;  
+      }
     } catch (error) {
       console.error('Unexpected error:', error);
       alert('Unexpected error: ' + error.message);
@@ -366,16 +386,15 @@ export default function AddBook() {
 
   return (
     <AddBookWrapper>
-      <Header />
-      <div className='isbn__container'>
+      <div className="isbn__container">
         <h2>Add a New Book</h2>
 
         <ISBNScanner onBookDetected={onBookDetected} />
 
         {isbnError && <p className="error-message">{isbnError}</p>}
 
-        <div className='isbn__add-container'>
-          <label>
+        <div className="isbn__add-container">
+          <label className='isbn-search'>
             Manual ISBN Input:
             <input
               type="tel"
@@ -383,13 +402,14 @@ export default function AddBook() {
               onChange={(e) => setManualIsbn(e.target.value)}
               placeholder="Enter ISBN manually"
             />
-          </label>
-          <button className='find--book' onClick={fetchBookByISBN} disabled={fetching}>
-            <BsSearch /> {fetching ? 'Fetching...' : 'Find Book'}
+            <button className="find--book" onClick={fetchBookByISBN} disabled={fetching}>
+            <BsSearch /> {fetching ? 'Fetching...' : ''}
           </button>
+          </label>
+          
         </div>
 
-        <label className='upload__cover' htmlFor="fileInput">
+        <label className="upload__cover" htmlFor="fileInput">
           <BsUpload /> Upload Cover Photo
         </label>
         <input
@@ -404,49 +424,37 @@ export default function AddBook() {
         {saveWarning && <p className="error-message">{saveWarning}</p>}
         {warningMessage && <p className="warning-message">{warningMessage}</p>}
 
-        {photo && (
-          <div style={{ marginTop: 10, marginBottom: 10 }}>
-            <img
-              src={photo}
-              alt="Book cover preview"
-              style={{ maxWidth: '100%', borderRadius: 8, boxShadow: '0 0 10px #aaa' }}
-            />
-          </div>
-        )}
-
         <div className="add-book-section">
           <label>
             Title:
             <input
               type="text"
               value={book.title}
-              onChange={(e) => setBook({ ...book, title: e.target.value })}
-              style={{ width: '100%', marginBottom: 8 }}
+              onChange={(e) => setBook((prev) => ({ ...prev, title: e.target.value }))}
+              placeholder="Book title"
             />
           </label>
+
           <label>
-            Authors (comma separated):
+            Author(s):
             <input
               type="text"
               value={book.authors}
-              onChange={(e) => setBook({ ...book, authors: e.target.value })}
-              style={{ width: '100%', marginBottom: 8 }}
+              onChange={(e) => setBook((prev) => ({ ...prev, authors: e.target.value }))}
+              placeholder="Author names"
             />
           </label>
-          <div className='cta__wrapper'>
-            <button className='action--btn' onClick={saveBook} style={{ marginRight: 10 }}>
-              <FaPlus /> Add to Library
-            </button>
-            <button className='action--btn cancel' onClick={cancelAdd}>
-              Cancel
-            </button>
+<div className='cta__wrapper'>
+          <button className="action--btn" onClick={saveBook}>
+            <FaPlus /> Add Book
+          </button>
+
+          <button className="action--btn cancel" onClick={cancelAdd}>
+            Cancel
+          </button>
           </div>
         </div>
-      </div>
-
-      {showConfirmationModal && (
-        <AddBookConfirmationModal title={book.title} onClose={handleModalClose} />
-      )}
+      </div>    
     </AddBookWrapper>
   );
 }

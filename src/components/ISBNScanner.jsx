@@ -22,6 +22,10 @@ h3 {
     border-radius: 8px;
 }
 
+.isbn__code {
+   font-size: 1.4rem;
+}
+
 `
 
 export default function ISBNScanner({ onBookDetected }) {
@@ -66,7 +70,7 @@ export default function ISBNScanner({ onBookDetected }) {
           onUpdate={handleScan}
         />
       </div>
-      {isbn && <p><strong>ISBN:</strong> {isbn}</p>}
+      {isbn && <p className='isbn__code'><strong>ISBN:</strong> {isbn}</p>}
       {error && <p style={{ color: 'red' }}>{error}</p>}
     </ISBNWrapper>
   );

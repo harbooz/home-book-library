@@ -1,17 +1,18 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { supabase } from '../supabaseClient';
-import Header from './Header';
-import { BsPencilSquare, BsTrash, BsFloppy, BsXLg, BsPlusLg } from 'react-icons/bs';
+import { BsPencilSquare, BsTrash, BsFloppy, BsXLg, BsPlusLg,BsXCircleFill  } from 'react-icons/bs';
+import { useNavigate } from 'react-router-dom';
 import Theme from '../Theme';
-import { useNavigate } from 'react-router-dom'; 
 import DeleteConfirmModal from './DeleteConfirmModal';
+import { BooksContext } from '../contexts/BooksContext';
+import bgImage from '/assets/web-cover-home-page.jpg';
+import WelcomeIntro from './WelcomeIntro';
 
 const HomePageContainer = styled.div`
-    position: relative;
-    display: flex;
-    min-height: 100%;
-    flex-direction: column;
+  position: relative;
+  display: flex;
+  min-height: 100%;
+  flex-direction: column;
 
   &::before {
     content: "";
@@ -20,25 +21,25 @@ const HomePageContainer = styled.div`
     left: 0;
     width: 100%;
     height: 100%;
-    background: url("/assets/web-cover-home-page.jpg") no-repeat center center;
+    background: url(${bgImage}) no-repeat center center;
     background-size: cover;
     z-index: -1;
   }
-`
+`;
 
 const ContainerWrapper = styled.div`
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    height: 100%;
-    padding: 1rem;
-    flex-grow: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  height: 100%;
+  padding: 1rem;
+  flex-grow: 1;
 
-    svg {
-     font-size: 2rem;       
-    }
-     
+  svg {
+    font-size: 2rem;       
+  }
+   
   .main__title {
     font-weight: 700;
     font-size: 4.2rem;
@@ -54,17 +55,7 @@ const ContainerWrapper = styled.div`
     font-size: 2.5rem;
     color: ${Theme.colors.whiteText};
     text-align: center;
-    margin-top: 2rem;
-
-    .add--books {
-      margin-top: 20px;
-      height: 50px;
-      padding: 0;
-      font-size: 18px;
-      text-transform: uppercase;
-      max-width: 300px;
-      width: 100%;
-    }
+    margin-top: 2rem;  
   }
 
   @keyframes spin {
@@ -90,110 +81,155 @@ const ContainerWrapper = styled.div`
     animation: spin 1s linear infinite;
     margin: 3rem auto;   
   }
-`
+
+  .load-more-btn {
+    margin: 2rem auto 4rem;
+    padding: 1.5rem 3rem;
+    font-size: 1.6rem;
+    border-radius: 1rem;
+    border: none;
+    cursor: pointer;
+    background-color: ${Theme.colors.whiteText};
+    color: #000;
+    transition: background-color 0.3s ease;
+
+    &:hover {
+      outline: unset;
+    }
+    &:active {
+      outline: unset;
+    }
+  }
+
+  .search__container {
+    position: relative;
+    width: 100%;
+    max-width: 37rem;
+    margin-bottom: 2rem;
+    .clear--btn {
+      position: absolute;
+       top: 1.8rem;
+      right: 1rem;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      color: ${Theme.colors.text};
+      font-size: 1.5rem;
+      padding: 0px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+  }
+}
+`;
 
 const CardContainer = styled.div`
-    display: flex;
-    flex-wrap: wrap;
-    margin: 0 auto;
-    justify-content: center;
-    max-width: 120rem;
-    gap: 2rem;
-     @media (min-width: 380px) and (max-width: 767px) {
-      gap: 1rem;
-    }
-`
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0 auto;
+  justify-content: center;
+  max-width: 120rem;
+  gap: 2rem;
+  @media (min-width: 380px) and (max-width: 767px) {
+    gap: 1rem;
+  }
+`;
 
 const CardWrapper = styled.div`
-    background-color: rgb(255, 255, 255);
-    border-radius: 1rem;
-    box-shadow: rgba(0, 0, 0, 0.1) 0px 6px 15px;
-    padding: 1.5rem;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    max-width: 25rem;
+  background-color: rgb(255, 255, 255);
+  border-radius: 1rem;
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 6px 15px;
+  padding: 1.5rem;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 25rem;
+  width: 100%;
+
+  @media (min-width: 380px) and (max-width: 767px) {
+    max-width: 16rem;
+    padding: 1rem;
+  }
+
+  .bookCover {
     width: 100%;
-
-     @media (min-width: 380px) and (max-width: 767px) {
-       max-width: 16rem;
-       padding: 1rem;
-    }
-
-    .bookCover {
+    img {
+      object-fit: cover;
+      object-position: top;
       width: 100%;
-      img {
-         object-fit: cover;
-         object-position: top;
-         width: 100%;
-         height: 23rem;
-         border-radius: 8px;
-         margin-bottom: 1rem;
-          @media (min-width: 380px) and (max-width: 767px) {
-                height: 15rem;
-            } 
-        }
+      height: 23rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      @media (min-width: 380px) and (max-width: 767px) {
+        height: 15rem;
+      } 
     }
+  }
 
-.edit-input {
+  .edit-input {
     width: 100%;
     height: 30px;
     max-width: 22rem;
-    margin: 0 auto;
+    margin: 0 auto 5px;
     border-radius: 5px;
     border: solid 1px gray;
     padding: 5px;
     box-sizing: border-box;
-    margin-bottom: 5px;
-}
+  }
 
-    .book__title {
-      font-size: 1.6rem;
-      line-height: 1.8rem;
-      font-weight: 600;
-      text-align: center;
-       @media (min-width: 380px) and (max-width: 767px) {
-          font-size: 1.4rem;
-        } 
-    }
-
-    .book__author {
+  .book__title {
+    font-size: 1.6rem;
+    line-height: 1.8rem;
+    font-weight: 600;
+    text-align: center;
+    @media (min-width: 380px) and (max-width: 767px) {
       font-size: 1.4rem;
-      color: rgb(127, 140, 141);
-      margin: 0px 0px 1.4rem;
-      text-align: center;
-        @media (min-width: 380px) and (max-width: 767px) {
-          font-size: 1.3rem;
-        } 
-    }
+    } 
+  }
 
-    .icon__btn {
-      background: none;
-      border: none;
-      font-size: 1.4rem;
-      cursor: pointer;
-      color: rgb(44, 62, 80);
-      padding: 0.6em 0.5em;
-      
-        &:focus {
-          outline: unset;
-      }
-    }
+  .book__author {
+    font-size: 1.4rem;
+    color: rgb(127, 140, 141);
+    margin: 0 0 1.4rem;
+    text-align: center;
+    @media (min-width: 380px) and (max-width: 767px) {
+      font-size: 1.3rem;
+    } 
+  }
 
-    .add-cover-btn {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 1.6rem;
-      padding: 6px 1.2rem;
-      color: rgb(0, 0, 0);
-      cursor: pointer;
-      user-select: none;
-      font-weight: 600;
-      margin-bottom: 8px;
+  .icon__btn {
+    background: none;
+    border: none;
+    font-size: 1.4rem;
+    cursor: pointer;
+    color: rgb(44, 62, 80);
+    padding: 0.6em 0.5em;
+
+    &:focus {
+      outline: unset;
     }
-`
+  }
+
+  .add-cover-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 1.6rem;
+    padding: 6px 1.2rem;
+    color: rgb(0, 0, 0);
+    cursor: pointer;
+    user-select: none;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+
+  
+`;
+
+
+
+
 const SearchInput = styled.input`
   padding: 0.6rem 1rem;
   border-radius: 1rem;
@@ -201,260 +237,227 @@ const SearchInput = styled.input`
   height: 4rem;
   font-size: 1.6rem;
   max-width: 37rem;
-  width: 100%;
+  width: 90%;
   margin-bottom: 2rem;
   font-size: 1.5rem;
   &:focus {
-  border: unset;
-  outline: none;
+    border: unset;
+    outline: none;
   }
 `;
 
 export default function Home() {
-  const [books, setBooks] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [editingBookId, setEditingBookId] = useState(null);
-  const [editedBook, setEditedBook] = useState({ title: '', authors: '', thumbnail: '' });
+  const {
+    books,
+    loading,
+    user,
+    editingBookId,
+    editedBook,
+    setEditedBook,
+    startEditing,
+    cancelEditing,
+    saveEdit,
+    handleCoverChange,
+    openDeleteModal,
+    bookToDelete,
+    cancelDelete,
+    confirmDeleteBook,
+  } = useContext(BooksContext);
+
   const [searchQuery, setSearchQuery] = useState('');
-  const [bookToDelete, setBookToDelete] = useState(null);
-  const [user, setUser] = useState(null);
+  const [debouncedQuery, setDebouncedQuery] = useState('');
+  const [visibleCount, setVisibleCount] = useState(12);
   const navigate = useNavigate();
 
+  // Debounce the search input with 500ms delay
   useEffect(() => {
-    fetchBooks();
-  }, []);
+    const handler = setTimeout(() => {
+      setDebouncedQuery(searchQuery);
+      setVisibleCount(12); // reset visible count on new search
+    }, 500);
 
-  async function fetchBooks() {
-    setLoading(true);
-    try {
-      const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser();
-
-      if (userError || !user) {
-        setBooks([]);
-        setLoading(false);
-        return;
-      }
-
-      setUser(user);
-
-      const { data, error } = await supabase
-        .from('books')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-
-      setBooks(data || []);
-    } catch (error) {
-      alert('Failed to load books: ' + (error.message || 'Check console for details'));
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  const startEditing = (book) => {
-    setEditingBookId(book.id);
-    setEditedBook({ ...book });
-  };
-
-  const cancelEditing = () => {
-    setEditingBookId(null);
-    setEditedBook({ title: '', authors: '', thumbnail: '' });
-  };
-
-  const handleCoverChange = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setEditedBook((prev) => ({
-        ...prev,
-        thumbnail: reader.result,
-      }));
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const saveEdit = async () => {
-    const { error } = await supabase
-      .from('books')
-      .update({
-        title: editedBook.title,
-        authors: editedBook.authors,
-        thumbnail: editedBook.thumbnail,
-      })
-      .eq('id', editingBookId);
-
-    if (error) {
-      alert('Update failed: ' + error.message);
-    } else {
-      setEditingBookId(null);
-      setEditedBook({ title: '', authors: '', thumbnail: '' });
-      fetchBooks();
-    }
-  };
-
-  // Delete flow
-  const openDeleteModal = (book) => {
-    setBookToDelete(book);
-  };
-
-  const cancelDelete = () => {
-    setBookToDelete(null);
-  };
-
-  const confirmDeleteBook = async () => {
-    if (!bookToDelete) return;
-    try {
-      const { error } = await supabase.from('books').delete().eq('id', bookToDelete.id);
-      if (error) throw error;
-
-      setBooks((prev) => prev.filter(book => book.id !== bookToDelete.id));
-    } catch (error) {
-      alert('Delete failed: ' + error.message);
-    } finally {
-      setBookToDelete(null);
-    }
-  };
+    return () => clearTimeout(handler);
+  }, [searchQuery]);
 
   const filteredBooks = books.filter(book => {
-    const q = searchQuery.toLowerCase();
-    return book.title.toLowerCase().includes(q) || book.authors.toLowerCase().includes(q);
+    const q = debouncedQuery.toLowerCase();
+    return (
+      book.title.toLowerCase().includes(q) ||
+      book.authors.toLowerCase().includes(q)
+    );
   });
 
+  const visibleBooks = filteredBooks.slice(0, visibleCount);
+
+  const loadMore = () => setVisibleCount(prev => prev + 8);
+
   return (
-    <HomePageContainer className='home-container'>
-      <Header />
-      <ContainerWrapper className='container'>
-        <h1 className='main__title'>My Home Book Library</h1>
+    <HomePageContainer className="home-container">
+      <ContainerWrapper className="container">
+        {books.length > 0 && <h1 className="main__title">My Home Book Library</h1>}
 
         {books.length > 0 && (
+          <div className='search__container'>
           <SearchInput
             type="text"
             placeholder="Search by title or author..."
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             aria-label="Search books"
+            style={{ paddingRight: '2.5rem' }} // add some padding for the icon space
           />
+            {searchQuery && (
+              <button
+              className='clear--btn'
+                onClick={() => setSearchQuery('')}
+                aria-label="Clear search">
+                <BsXCircleFill />
+              </button>
+            )}
+    </div>
         )}
 
         {loading ? (
-          <div className='spinner__wrapper'>
-          <div className="spinner" aria-label="Loading spinner" role="status" />
+          <div className="spinner__wrapper">
+            <div className="spinner" aria-label="Loading spinner" role="status" />
           </div>
         ) : filteredBooks.length === 0 ? (
-          <p className='sub__title'>
-           {user && "No books found matching your search."}
-            {books.length === 0 && (
-              <>
-                No books yet! <br />Let’s start building your personal library
-              </>
-            )}
-            <button
-              className='add--books'
-              onClick={async () => {
-                const { data: { user } } = await supabase.auth.getUser();
-                if (user) {
-                  navigate('/add');
-                } else {
-                  navigate('/login');
-                }
-              }}
-            >
-              Add Books
-            </button>
-          </p>
+          <>
+            {user && <p className="sub__title">No books found matching your search.</p>}
+            {books.length === 0 && <WelcomeIntro />}
+          </>
         ) : (
-          <CardContainer>
-            {filteredBooks.map(book => {
-              const isEditing = editingBookId === book.id;
-              return (
-                <CardWrapper key={book.id}>
-                  {isEditing ? (
-                    <>
-                      {!editedBook.thumbnail && (
-                        <>
-                          <input
-                            id={`coverUpload-${book.id}`}
-                            type="file"
-                            accept="image/*"
-                            style={{ display: 'none' }}
-                            onChange={handleCoverChange}
-                          />
-                          <label
-                            className='add-cover-btn'
-                            htmlFor={`coverUpload-${book.id}`}
-                            title="Add cover"
+          <>
+            <CardContainer>
+              {visibleBooks.map(book => {
+                const isEditing = editingBookId === book.id;
+                return (
+                  <CardWrapper key={book.id}>
+                    {isEditing ? (
+                      <>
+                        {!editedBook.thumbnail && (
+                          <>
+                            <input
+                              id={`coverUpload-${book.id}`}
+                              type="file"
+                              accept="image/*"
+                              style={{ display: 'none' }}
+                              onChange={handleCoverChange}
+                            />
+                            <label
+                              className="add-cover-btn"
+                              htmlFor={`coverUpload-${book.id}`}
+                              title="Add cover"
+                            >
+                              <BsPlusLg size={18} />
+                              Add Cover
+                            </label>
+                          </>
+                        )}
+                        {editedBook.thumbnail && (
+                          <div className="bookCover">
+                            <img src={editedBook.thumbnail} alt="Cover" />
+                          </div>
+                        )}
+
+                        <input
+                          className="edit-input"
+                          name="title"
+                          type="text"
+                          placeholder="Edit title"
+                          value={editedBook.title}
+                          onChange={e =>
+                            setEditedBook(prev => ({ ...prev, title: e.target.value }))
+                          }
+                        />
+
+                        <input
+                          className="edit-input"
+                          name="authors"
+                          type="text"
+                          placeholder="Edit author"
+                          value={editedBook.authors}
+                          onChange={e =>
+                            setEditedBook(prev => ({ ...prev, authors: e.target.value }))
+                          }
+                        />
+
+                        <div>
+                          <button
+                            className="icon__btn"
+                            aria-label="Save edit"
+                            onClick={() => saveEdit(book.id)}
+                            title="Save"
                           >
-                            <BsPlusLg size={18} />
-                            Add Cover
-                          </label>
-                        </>
-                      )}
-                      {editedBook.thumbnail && (
-                        <div className='bookCover'>
-                          <img
-                            src={editedBook.thumbnail}
-                            alt="Cover"
-                          />
+                            <BsFloppy size={24} />
+                          </button>
+
+                          <button
+                            className="icon__btn"
+                            aria-label="Cancel edit"
+                            onClick={cancelEditing}
+                            title="Cancel"
+                          >
+                            <BsXLg size={22} />
+                          </button>
                         </div>
-                      )}
-                      <input
-                       className='edit-input'
-                        type="text"
-                        value={editedBook.title}
-                        onChange={e => setEditedBook(prev => ({ ...prev, title: e.target.value }))}
-                        placeholder="Book Title"
-                        aria-label="Edit book title"
-                      />
-                      <input
-                        type="text"
-                        value={editedBook.authors}
-                        onChange={e => setEditedBook(prev => ({ ...prev, authors: e.target.value }))}
-                        placeholder="Author(s)"
-                        aria-label="Edit book authors"
-                        className='edit-input'
-                      />
-                      <div>
-                        <button className='icon__btn' onClick={saveEdit} aria-label="Save edit">
-                          <BsFloppy />
-                        </button>
-                        <button className='icon__btn' onClick={cancelEditing} aria-label="Cancel edit">
-                          <BsXLg />
-                        </button>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      {book.thumbnail && (
-                        <div className='bookCover'>
-                          <img src={book.thumbnail} alt={`Cover of ${book.title}`} />
-                        </div>
-                      )}
-                      <h2 className='book__title'>{book.title}</h2>
-                      <p className='book__author'>{book.authors}</p>
-                      <div>
-                        <button className='icon__btn' onClick={() => startEditing(book)} aria-label={`Edit ${book.title}`}>
-                          <BsPencilSquare />
-                        </button>
-                        <button
-                          className='icon__btn'
-                          onClick={() => openDeleteModal(book)}
-                          aria-label={`Delete ${book.title}`}
+                      </>
+                    ) : (
+                      <>
+                        <div
+                          className="bookCover"
+                          onClick={() => navigate(`/book-details/${book.id}`)}
+                          role="button"
+                          tabIndex={0}
+                          aria-label={`View details for ${book.title}`}
+                          onKeyDown={e => e.key === 'Enter' && navigate(`/book-details/${book.id}`)}
                         >
-                          <BsTrash />
-                        </button>
-                      </div>
-                    </>
-                  )}
-                </CardWrapper>
-              );
-            })}
-          </CardContainer>
+                         {book.thumbnail && (
+                            <img
+                              src={book.thumbnail}
+                              alt={`Cover of ${book.title}`}
+                            />
+                          )}
+                        </div>
+                        <h2 className="book__title">{book.title}</h2>
+                        <p className="book__author">{book.authors}</p>
+
+                        <div>
+                          <button
+                            className="icon__btn"
+                            aria-label="Edit book"
+                            onClick={() => startEditing(book)}
+                            title="Edit"
+                          >
+                            <BsPencilSquare size={22} />
+                          </button>
+
+                          <button
+                            className="icon__btn"
+                            aria-label="Delete book"
+                            onClick={() => openDeleteModal(book)}
+                            title="Delete"
+                          >
+                            <BsTrash size={22} />
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </CardWrapper>
+                );
+              })}
+            </CardContainer>
+
+            {visibleCount < filteredBooks.length && (
+              <button
+                className="load-more-btn"
+                onClick={loadMore}
+                aria-label="Load more books"
+              >
+                Load More
+              </button>
+            )}
+          </>
         )}
 
         {bookToDelete && (

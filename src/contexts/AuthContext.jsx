@@ -13,7 +13,7 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     // Check active session on load
-    const session = supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       setLoading(false);
     });
@@ -32,7 +32,10 @@ export function AuthProvider({ children }) {
     user,
     login: (email, password) => supabase.auth.signInWithPassword({ email, password }),
     signup: (email, password) => supabase.auth.signUp({ email, password }),
-    logout: () => supabase.auth.signOut(),
+    logout: async () => {
+      await supabase.auth.signOut();
+      setUser(null);  // Update user state immediately after logout
+    },
   };
 
   return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>;
