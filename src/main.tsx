@@ -10,6 +10,7 @@ import { BooksProvider } from './contexts/BooksContext';
 import WelcomeIntro from './components/WelcomeIntro'
 import Header from './components/Header'
 import styled from 'styled-components'
+import bgImage from '/assets/web-cover-home-page.jpg';
 import ForgotPassword from './auth/ForgotPassword';
 import UpdatePassword from './auth/UpdatePassword';
 import Profile from './auth/Profile'
@@ -20,7 +21,20 @@ const BookAppContainer = styled.div.attrs({className: "book-app-app"})`
   display: flex;
   height: 100%;
   flex-direction: column;
-  overflow-y: auto;
+
+  &::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url(${bgImage}) no-repeat center center;
+    background-size: cover;
+    z-index: -1;
+    overflow: hidden;
+    background-attachment: scroll;
+  }
 `
 
 
