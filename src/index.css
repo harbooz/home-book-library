@@ -37,6 +37,7 @@ html, body, #root {
   height: 100%;
   background-size: cover;
   background-attachment: fixed;
+  overflow-y: auto;
 }
 
 a {
