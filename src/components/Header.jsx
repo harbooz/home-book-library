@@ -21,9 +21,13 @@ const HeaderNav = styled.div`
 
     & nav {
       display: flex;
-      gap: 1.2rem;
+      gap: 1.6rem;
       align-items: center;
     }
+
+     .btn__login {
+     padding: 5px;
+     }
 
   .btn__login, .btn__add-book {
     display: flex;
@@ -105,6 +109,9 @@ const handleLogout = async () => {
             </Link>
           ) : (
             <> 
+             <Link to="/profile" className="pofile__btn" title='Profile'>
+              <FaCircleUser /> 
+            </Link>
             <button
             title={user ? "Log out" : ""}
               className="btn__login"
@@ -117,9 +124,7 @@ const handleLogout = async () => {
             >
               {/* <span>Log Out</span> */}<FaArrowRightFromBracket /> 
             </button>
-            <Link to="/profile" className="pofile__btn" title='Profile'>
-              <FaCircleUser /> 
-            </Link>
+           
             </>
           )}
         </nav>
