@@ -21,6 +21,7 @@ const BookAppContainer = styled.div.attrs({className: "book-app-app"})`
   display: flex;
   height: 100%;
   flex-direction: column;
+  overflow-y: auto;
 
   &::before {
     content: "";
@@ -29,8 +30,8 @@ const BookAppContainer = styled.div.attrs({className: "book-app-app"})`
     left: 0;
     width: 100%;
     height: 100%;
-    background: url(${bgImage}) no-repeat center center;
-    background-size: cover;
+    background: #000 url(${bgImage}) no-repeat center center;
+    background-size: 100%;
     z-index: -1;
     overflow: hidden;
     background-attachment: scroll;
