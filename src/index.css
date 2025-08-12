@@ -26,7 +26,7 @@ html, body, #root {
   box-sizing: border-box;
 }
 
-body:after {
+:root, body:before {
   content: "";
   position: fixed;
   background: url('/assets/web-cover-home-page.jpg') no-repeat center;
