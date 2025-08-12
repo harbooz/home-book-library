@@ -1,6 +1,6 @@
 import React, { useContext, useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { BsPencilSquare, BsTrash, BsFloppy, BsXLg, BsPlusLg,BsXCircleFill  } from 'react-icons/bs';
+import { BsPencilSquare, BsTrash, BsFloppy, BsXLg, BsPlusLg, BsXCircleFill } from 'react-icons/bs';
 import { useNavigate } from 'react-router-dom';
 import Theme from '../Theme';
 import DeleteConfirmModal from './DeleteConfirmModal';
@@ -105,8 +105,8 @@ const ContainerWrapper = styled.div`
       display: flex;
       align-items: center;
       justify-content: center;
+    }
   }
-}
 `;
 
 const CardContainer = styled.div`
@@ -115,6 +115,7 @@ const CardContainer = styled.div`
   margin: 0 auto;
   justify-content: center;
   max-width: 120rem;
+  width: 100%;
   gap: 2rem;
   @media (min-width: 380px) and (max-width: 767px) {
     gap: 1rem;
@@ -210,12 +211,7 @@ const CardWrapper = styled.div`
     font-weight: 600;
     margin-bottom: 8px;
   }
-
-  
 `;
-
-
-
 
 const SearchInput = styled.input`
   padding: 0.6rem 1rem;
@@ -255,13 +251,11 @@ export default function Home() {
   const [visibleCount, setVisibleCount] = useState(12);
   const navigate = useNavigate();
 
-  // Debounce the search input with 500ms delay
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedQuery(searchQuery);
-      setVisibleCount(12); // reset visible count on new search
+      setVisibleCount(12);
     }, 300);
-
     return () => clearTimeout(handler);
   }, [searchQuery]);
 
@@ -274,7 +268,6 @@ export default function Home() {
   });
 
   const visibleBooks = filteredBooks.slice(0, visibleCount);
-
   const loadMore = () => setVisibleCount(prev => prev + 8);
 
   return (
@@ -284,34 +277,33 @@ export default function Home() {
 
         {books.length > 0 && (
           <div className='search__container'>
-          <SearchInput
-            type="text"
-            placeholder="Search by title or author..."
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            aria-label="Search books"
-            style={{ paddingRight: '2.5rem' }} // add some padding for the icon space
-          />
+            <SearchInput
+              type="text"
+              placeholder="Search by title or author..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              aria-label="Search books"
+              style={{ paddingRight: '2.5rem' }}
+            />
             {searchQuery && (
               <button
-              className='clear--btn'
+                className='clear--btn'
                 onClick={() => setSearchQuery('')}
                 aria-label="Clear search">
                 <BsXCircleFill />
               </button>
             )}
-    </div>
+          </div>
         )}
 
         {loading ? (
           <div className="spinner__wrapper">
             <div className="spinner" aria-label="Loading spinner" role="status" />
           </div>
+        ) : books.length === 0 ? (
+          <WelcomeIntro />
         ) : filteredBooks.length === 0 ? (
-          <>
-            {user && <p className="sub__title">No books found matching your search.</p>}
-            {books.length === 0 && <WelcomeIntro />}
-          </>
+          <p className="sub__title">No books found matching your search.</p>
         ) : (
           <>
             <CardContainer>
@@ -398,7 +390,7 @@ export default function Home() {
                           aria-label={`View details for ${book.title}`}
                           onKeyDown={e => e.key === 'Enter' && navigate(`/book-details/${book.id}`)}
                         >
-                         {book.thumbnail && (
+                          {book.thumbnail && (
                             <img
                               src={book.thumbnail}
                               alt={`Cover of ${book.title}`}
@@ -436,13 +428,13 @@ export default function Home() {
 
             {visibleCount < filteredBooks.length && (
               <div>
-              <button
-                className="load-more-btn"
-                onClick={loadMore}
-                aria-label="Load more books"
-              >
-                Load More
-              </button>
+                <button
+                  className="load-more-btn"
+                  onClick={loadMore}
+                  aria-label="Load more books"
+                >
+                  Load More
+                </button>
               </div>
             )}
           </>

@@ -11,6 +11,8 @@ import WelcomeIntro from './components/WelcomeIntro'
 import Header from './components/Header'
 import styled from 'styled-components'
 import bgImage from '/assets/web-cover-home-page.jpg';
+import ForgotPassword from './auth/ForgotPassword';
+import UpdatePassword from './auth/UpdatePassword';
 
 const BookAppContainer = styled.div.attrs({className: "book-app-app"})`
   position: relative;
@@ -46,7 +48,8 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
       <Route path="/books-list" element={<Home/>}/>
       <Route path="add" element={<AddBook />} />
       <Route path="/login" element={<Login />} />
-
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/update-password" element={<UpdatePassword />} />
     </Routes>
     </BookAppContainer>
   </BrowserRouter>
