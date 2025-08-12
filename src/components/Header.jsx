@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { FaArrowRightToBracket, FaArrowRightFromBracket, FaPlus } from "react-icons/fa6";
+import { FaArrowRightToBracket, FaArrowRightFromBracket, FaPlus,FaRegCircleUser, FaCircleUser  } from "react-icons/fa6";
 import styled from 'styled-components';
 import Theme from '../Theme';
 import { useAuth } from '../contexts/AuthContext';
@@ -19,6 +19,12 @@ const HeaderNav = styled.div`
     height: 6rem;
     box-sizing: border-box;
 
+    & nav {
+      display: flex;
+      gap: 1.2rem;
+      align-items: center;
+    }
+
   .btn__login, .btn__add-book {
     display: flex;
     align-items: center;
@@ -28,7 +34,7 @@ const HeaderNav = styled.div`
     font-size: 1.4rem;
 
     & svg {
-      font-size: 1.6rem;
+      font-size: 2rem;
     }
 
     & span {
@@ -53,6 +59,12 @@ const HeaderNav = styled.div`
       padding: 8px;
       justify-content: center;
     }
+  }
+
+  .pofile__btn {
+  font-size: 25px;
+    display: flex;
+  color: ${Theme.colors.whiteText};
   }
 `;
 
@@ -80,7 +92,7 @@ const handleLogout = async () => {
           📚 Home Library
         </Link>
 
-        <nav style={{ display: 'flex', gap: 12 }}>
+        <nav>
          {user && (
             <Link to="/add" className="btn__add-book">
               <FaPlus /> <span>Add Book</span>
@@ -92,7 +104,9 @@ const handleLogout = async () => {
               <span>Log In</span> <FaArrowRightToBracket />
             </Link>
           ) : (
+            <> 
             <button
+            title={user ? "Log out" : ""}
               className="btn__login"
               onClick={handleLogout}
               style={{
@@ -101,8 +115,12 @@ const handleLogout = async () => {
                 cursor: 'pointer',
               }}
             >
-              <span>Log Out</span> <FaArrowRightFromBracket />
+              {/* <span>Log Out</span> */}<FaArrowRightFromBracket /> 
             </button>
+            <Link to="/profile" className="pofile__btn" title='Profile'>
+              <FaCircleUser /> 
+            </Link>
+            </>
           )}
         </nav>
     </HeaderNav>
