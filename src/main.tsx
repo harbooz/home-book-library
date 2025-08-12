@@ -20,6 +20,7 @@ const BookAppContainer = styled.div.attrs({className: "book-app-app"})`
   display: flex;
   height: 100%;
   flex-direction: column;
+  overflow-y: auto;
 `
 
 
