@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabaseClient";
 import styled from "styled-components";
 import Theme from "../Theme";
+import { FaXmark } from "react-icons/fa6";
 
 const ProfileContainer = styled.div`
   height: 100%;
@@ -10,8 +12,7 @@ const ProfileContainer = styled.div`
   align-items: center;
   padding: 2rem;
   box-sizing: border-box;
-  font-size: 1.2rem;
-
+  font-size: 1.2rem; 
 `;
 
 const Card = styled.div`
@@ -21,6 +22,16 @@ const Card = styled.div`
   width: 100%;
   max-width: 400px;
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15);
+  position: relative;
+
+  .close--profile {
+    font-size: 2.5rem;
+    color: ${Theme.colors.whiteText};
+    position: absolute;
+    right: 2rem;
+    top: 2rem;
+    cursor: pointer;
+  }
 
   h1 {
     text-align: center;
@@ -35,7 +46,7 @@ const Label = styled.label`
   display: block;
   margin-bottom: 8px;
   font-weight: 500;
- color: ${Theme.colors.whiteText};
+  color: ${Theme.colors.whiteText};
 `;
 
 const Input = styled.input`
@@ -46,11 +57,10 @@ const Input = styled.input`
   border: 1px solid ${Theme.colors.whiteText};
   background: transparent;
   font-size: 14px;
-  outline-color: unset;
   box-sizing: border-box;
   color: ${Theme.colors.whiteText};
   &:focus {
-  outline: unset;
+    outline: none;
   }
 `;
 
@@ -66,18 +76,19 @@ const Button = styled.button`
   cursor: pointer;
   margin-bottom: 1.5rem;
   transition: all 0.25s ease;
-    &.submit--btn {
+
+  &.submit--btn {
     background-color: ${Theme.colors.whiteText};
     color: ${Theme.colors.text};
-     &:hover {
-        background-color: ${Theme.colors.primary || "#2575fc"};
-        color: ${Theme.colors.whiteText};
-     }
+    &:hover {
+      background-color: ${Theme.colors.primary || "#2575fc"};
+      color: ${Theme.colors.whiteText};
     }
+  }
 
   &:hover {
-    background-color: ${Theme.colors.whiteText || "#1d63d0"};
-     color: ${Theme.colors.text};
+    background-color: ${Theme.colors.whiteText};
+    color: ${Theme.colors.text};
   }
 `;
 
@@ -89,6 +100,7 @@ const Message = styled.p`
 `;
 
 export default function Profile() {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -98,8 +110,20 @@ export default function Profile() {
   const [errorMsg, setErrorMsg] = useState(false);
 
   useEffect(() => {
-    getProfile();
+    checkAuth();
   }, []);
+
+  async function checkAuth() {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+    getProfile();
+  }
 
   async function getProfile() {
     setLoading(true);
@@ -127,17 +151,11 @@ export default function Profile() {
       .single();
 
     if (error && error.code === "PGRST116") {
-      // profile row not found, create one
-      const { error: insertError } = await supabase
+      await supabase
         .from("profiles")
         .insert({ id: user.id, full_name: "", address: "" });
-      if (insertError) {
-        setErrorMsg(true);
-        setMessage(insertError.message);
-      } else {
-        setFullName("");
-        setAddress("");
-      }
+      setFullName("");
+      setAddress("");
     } else if (data) {
       setFullName(data.full_name || "");
       setAddress(data.address || "");
@@ -168,16 +186,12 @@ export default function Profile() {
     }
 
     try {
-      // Update email if changed
       if (email !== user.email) {
         const { error } = await supabase.auth.updateUser({ email });
         if (error) throw error;
-        setMessage(
-          "Email update link sent! Please check your inbox for confirmation."
-        );
+        setMessage("Email update link sent! Please check your inbox.");
       }
 
-      // Upsert profile info
       const { error: profileError } = await supabase.from("profiles").upsert({
         id: user.id,
         full_name: fullName,
@@ -220,6 +234,10 @@ export default function Profile() {
   return (
     <ProfileContainer>
       <Card>
+        <FaXmark
+          className="close--profile"
+          onClick={() => navigate(-1)}
+        />
         <h1>My Profile</h1>
 
         {message && <Message error={errorMsg}>{message}</Message>}
