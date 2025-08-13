@@ -67,7 +67,11 @@ export default function Login() {
       const { error } = isLogin
         ? await login(email, password)
         : await signup(email, password);
+
       if (error) throw error;
+
+      // ✅ Preload Profile page in background
+      import('../auth/Profile');
 
       await fetchBooks();
       navigate('/books-list');

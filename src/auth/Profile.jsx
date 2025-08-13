@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabaseClient";
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
 import Theme from "../Theme";
 import { FaXmark } from "react-icons/fa6";
+import Spinner from "../components/Spinner";
 
 const ProfileContainer = styled.div`
   height: 100%;
@@ -12,11 +13,12 @@ const ProfileContainer = styled.div`
   align-items: center;
   padding: 2rem;
   box-sizing: border-box;
-  font-size: 1.2rem; 
+  font-size: 1.2rem;
 `;
 
+
 const Card = styled.div`
- background: ${Theme.colors.darkBrownRgba};
+  background: ${Theme.colors.darkBrownRgba};
   border-radius: 16px;
   padding: 32px 28px;
   width: 100%;
@@ -99,7 +101,7 @@ const Message = styled.p`
   text-align: center;
 `;
 
-export default function Profile() {
+function ProfileComponent() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [fullName, setFullName] = useState("");
@@ -109,11 +111,12 @@ export default function Profile() {
   const [message, setMessage] = useState("");
   const [errorMsg, setErrorMsg] = useState(false);
 
-  useEffect(() => {
-    checkAuth();
-  }, []);
+  const memoizedUserData = useMemo(
+    () => ({ fullName, email, address }),
+    [fullName, email, address]
+  );
 
-  async function checkAuth() {
+  const checkAuth = useCallback(async () => {
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -123,9 +126,9 @@ export default function Profile() {
       return;
     }
     getProfile();
-  }
+  }, [navigate]);
 
-  async function getProfile() {
+  const getProfile = useCallback(async () => {
     setLoading(true);
     setMessage("");
     setErrorMsg(false);
@@ -165,51 +168,54 @@ export default function Profile() {
     }
 
     setLoading(false);
-  }
+  }, []);
 
-  async function updateProfile(e) {
-    e.preventDefault();
-    setLoading(true);
-    setMessage("");
-    setErrorMsg(false);
+  const updateProfile = useCallback(
+    async (e) => {
+      e.preventDefault();
+      setLoading(true);
+      setMessage("");
+      setErrorMsg(false);
 
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
 
-    if (userError || !user) {
-      setErrorMsg(true);
-      setMessage(userError?.message || "User not found.");
-      setLoading(false);
-      return;
-    }
-
-    try {
-      if (email !== user.email) {
-        const { error } = await supabase.auth.updateUser({ email });
-        if (error) throw error;
-        setMessage("Email update link sent! Please check your inbox.");
+      if (userError || !user) {
+        setErrorMsg(true);
+        setMessage(userError?.message || "User not found.");
+        setLoading(false);
+        return;
       }
 
-      const { error: profileError } = await supabase.from("profiles").upsert({
-        id: user.id,
-        full_name: fullName,
-        address,
-      });
+      try {
+        if (email !== user.email) {
+          const { error } = await supabase.auth.updateUser({ email });
+          if (error) throw error;
+          setMessage("Email update link sent! Please check your inbox.");
+        }
 
-      if (profileError) throw profileError;
+        const { error: profileError } = await supabase.from("profiles").upsert({
+          id: user.id,
+          full_name: fullName,
+          address,
+        });
 
-      if (!errorMsg) setMessage("Profile updated successfully.");
-    } catch (error) {
-      setErrorMsg(true);
-      setMessage(error.message);
-    } finally {
-      setLoading(false);
-    }
-  }
+        if (profileError) throw profileError;
 
-  async function updatePassword() {
+        if (!errorMsg) setMessage("Profile updated successfully.");
+      } catch (error) {
+        setErrorMsg(true);
+        setMessage(error.message);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [email, fullName, address, errorMsg]
+  );
+
+  const updatePassword = useCallback(async () => {
     if (!password) {
       setErrorMsg(true);
       setMessage("Please enter a new password.");
@@ -229,6 +235,18 @@ export default function Profile() {
       setPassword("");
     }
     setLoading(false);
+  }, [password]);
+
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
+
+  if (loading) {
+    return (
+      <ProfileContainer>
+        <Spinner/>
+      </ProfileContainer>
+    );
   }
 
   return (
@@ -241,51 +259,48 @@ export default function Profile() {
         <h1>My Profile</h1>
 
         {message && <Message error={errorMsg}>{message}</Message>}
-        {loading ? (
-          <p>Loading...</p>
-        ) : (
-          <>
-            <form onSubmit={updateProfile}>
-              <Label>Full Name:</Label>
-              <Input
-                type="text"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-              />
 
-              <Label>Email:</Label>
-              <Input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
+        <form onSubmit={updateProfile}>
+          <Label>Full Name:</Label>
+          <Input
+            type="text"
+            value={memoizedUserData.fullName}
+            onChange={(e) => setFullName(e.target.value)}
+          />
 
-              <Label>Address:</Label>
-              <Input
-                type="text"
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-              />
+          <Label>Email:</Label>
+          <Input
+            type="email"
+            value={memoizedUserData.email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
 
-              <Button type="submit" disabled={loading} className="submit--btn">
-                {loading ? "Saving..." : "Save Profile"}
-              </Button>
-            </form>
+          <Label>Address:</Label>
+          <Input
+            type="text"
+            value={memoizedUserData.address}
+            onChange={(e) => setAddress(e.target.value)}
+          />
 
-            <Label>New Password:</Label>
-            <Input
-              type="password"
-              autoComplete="new-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-            />
-            <Button onClick={updatePassword} disabled={loading}>
-              {loading ? "Updating..." : "Update Password"}
-            </Button>
-          </>
-        )}
+          <Button type="submit" disabled={loading} className="submit--btn">
+            Save Profile
+          </Button>
+        </form>
+
+        <Label>New Password:</Label>
+        <Input
+          type="password"
+          autoComplete="new-password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="••••••••"
+        />
+        <Button onClick={updatePassword} disabled={loading}>
+          Update Password
+        </Button>
       </Card>
     </ProfileContainer>
   );
 }
+
+export default React.memo(ProfileComponent);

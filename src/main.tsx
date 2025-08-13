@@ -1,9 +1,7 @@
-import React from 'react'
+import React, { Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import ReactDOM from 'react-dom/client'
 import './index.css'
-import Home from './components/Home'
-import AddBook from './components/AddBook'
 import { AuthProvider } from './contexts/AuthContext';
 import Login from './auth/Login'
 import { BooksProvider } from './contexts/BooksContext';
@@ -13,8 +11,13 @@ import styled from 'styled-components'
 import bgImage from '/assets/web-cover-home-page.jpg';
 import ForgotPassword from './auth/ForgotPassword';
 import UpdatePassword from './auth/UpdatePassword';
-import Profile from './auth/Profile'
+
+const Home = lazy(() => import('./components/Home'));
+const AddBook = lazy(() => import('./components/AddBook'));
+const Profile = lazy(() => import('./auth/Profile'));
+
 import ProtectedRoute from './routes/ProtectedRoute'
+import Spinner from './components/Spinner';
 
 const BookAppContainer = styled.div.attrs({className: "book-app-app"})`
   position: relative;
@@ -45,6 +48,7 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
    <BrowserRouter>
    <BookAppContainer>
    <Header/>
+    <Suspense fallback={<Spinner/>}>
     <Routes>
       <Route path="/" element={<WelcomeIntro/>}/>
       <Route path="/books-list" element={<Home/>}/>
@@ -57,6 +61,7 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
          <ProtectedRoute> <Profile />  </ProtectedRoute>}
         />
     </Routes>
+    </Suspense>
     </BookAppContainer>
   </BrowserRouter>
   </AuthProvider>

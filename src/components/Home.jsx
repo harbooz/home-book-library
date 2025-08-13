@@ -5,7 +5,6 @@ import { useNavigate } from 'react-router-dom';
 import Theme from '../Theme';
 import DeleteConfirmModal from './DeleteConfirmModal';
 import { BooksContext } from '../contexts/BooksContext';
-import bgImage from '/assets/web-cover-home-page.jpg';
 import WelcomeIntro from './WelcomeIntro';
 
 const HomePageContainer = styled.div`
